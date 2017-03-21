@@ -212,7 +212,9 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
 
 //--------------All states are same--------------//
         if(json.type == 'disconnect'){
-            p = '<p style="background:'+json.color+'">system  @ '+ json.time+ ' : Bye ' + json.text +'</p>';
+            if(json.text!=false){
+                p = '<p style="background:'+json.color+'">system  @ '+ json.time+ ' : Bye ' + json.text +'</p>';
+            }
 
         }else if(json.type=='playerList'){
             //update player list
