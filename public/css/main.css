@@ -6,10 +6,11 @@ div {width:500px;}
     position: absolute;
     bottom:0px;
     margin-bottom: 10px;
+    width:100%;
 }
 #content { 
     padding:0px; 
-    background:#ddd; 
+    background:#EEE; 
     //border-radius:5px;
     //border:1px solid #CCC; 
     margin-bottom:5px; 
@@ -24,7 +25,7 @@ div {width:500px;}
 #chatArea{
     position:relative;
     padding:5px; 
-    background:#ddd; 
+    background:#EEE; 
     border-radius:5px;
     border:1px solid #CCC; 
     margin-top:10px; 
@@ -65,7 +66,10 @@ div {width:500px;}
     display:none;
 }
 #playerList{
-
+    padding:5px; 
+    background:#EEE; 
+    border-radius:5px;
+    border:1px solid #CCC; 
 }
 #stateDisplay{
 
