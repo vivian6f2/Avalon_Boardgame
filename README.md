@@ -1,19 +1,18 @@
-chat-websocket (socket.io)
+avalon boardgame (socket.io)
 ===============
 
-a very simple chat demo using websocket. Using socket.io instead of ws modules.
+a very simple avalon boardgame using websocket. Using socket.io instead of ws modules.
 
 Detail
 ==================
 
+simple chat room
 http://blog.fens.me/nodejs-socketio-chat/
 
 Install
 ==================
 
 ```{bash}
-git clone https://github.com/bsspirit/chat-websocket.git
-cd chat-websocket
 npm install
 node app.js
 ```
