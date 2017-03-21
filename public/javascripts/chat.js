@@ -88,6 +88,7 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
 
                     $('.allStates').css('display','initial');
                     $('.setName').css('display','none');
+                    $('.displayChat').css('display','inline-block');
 
                     join_game = json.value;
                     player_id = json.player_id;
@@ -260,10 +261,10 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
                 if(json.playerData[i].id==room_owner_id){
                     $('#roomOwner').html('Room owner: '+json.playerData[i].name +' ('+json.playerData[i].id+')');
                 }
-                if(json.playerData[i].id==player_id) inner_li += '<tr style="font-weight:bold;">';
-                else inner_li += '<tr>';
+                if(json.playerData[i].id==player_id) inner_li += '<tr style="font-weight:bold;color:'+json.playerData[i].color+';">';
+                else inner_li += '<tr style="color:'+json.playerData[i].color+';">';
 
-                inner_li += '<td>';
+                inner_li += '<td style="width:20px;">';
                 if(player_role!=null){
                     if(player_role[0]=='Merlin'){
                         if(json.playerData[i].role[1]=='Evil' && json.playerData[i].role[0]!='Mordred'){
@@ -286,9 +287,9 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
                 }
                 inner_li += '</td>';
 
-                inner_li += '<td>'+json.playerData[i].id+'</td><td>'+json.playerData[i].name+'</td>';
+                inner_li += '<td style="width:5px;">'+json.playerData[i].id+'</td><td style="width:80px;">'+json.playerData[i].name+'</td>';
 
-                inner_li += '<td>';
+                inner_li += '<td style="width:10px;">';
                 if(json.playerData[i].vote==true){
                     inner_li += " agree";
                 }else if(json.playerData[i].vote==false){
