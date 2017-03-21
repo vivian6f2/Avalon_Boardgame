@@ -9,8 +9,8 @@
     <script src="javascripts/chat.js"></script>
 </head>
 <body>
-    <h1 class="allStates">Avalon</h1>
-    <span id="stateDisplay" class="allStates">state : wait</span>
+    <h1>Avalon</h1>
+    <span id="stateDisplay" class="allStates">state : wait</span><br>
     <div class="allStates">
         <span id="roomOwner"></span><br>
         <span id="lastGameWinner"></span><br>
@@ -66,10 +66,19 @@
         </div>
         <button id="charactersDoneButton">Done</button>
     </div>
-    <div class="allStates">
-        <span id="status">Connecting...</span>
-        <input type="text" id="input"/>
+    <br><br>
+    <div class="allStates" id="chatRoom">
+        <div id="chatArea">
+            <div id="content"></div>
+        </div>
+        <div>
+            <span id="status">Connecting...</span>
+            <input type="text" id="input"/>
+        </div>
     </div>
-    <div id="content" class="allStates"></div>
+    <div class="setName">
+        <span id="connectStatus">Connecting...</span>
+        <input type="text" id="nameInput"/>
+    </div>
 </body>
 </html>
