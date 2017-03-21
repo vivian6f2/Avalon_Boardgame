@@ -260,9 +260,10 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
                 if(json.playerData[i].id==room_owner_id){
                     $('#roomOwner').html('Room owner: '+json.playerData[i].name +' ('+json.playerData[i].id+')');
                 }
-                if(json.playerData[i].id==player_id) inner_li += '<li style="font-weight:bold;">';
-                else inner_li += '<li>';
+                if(json.playerData[i].id==player_id) inner_li += '<tr style="font-weight:bold;">';
+                else inner_li += '<tr>';
 
+                inner_li += '<td>';
                 if(player_role!=null){
                     if(player_role[0]=='Merlin'){
                         if(json.playerData[i].role[1]=='Evil' && json.playerData[i].role[0]!='Mordred'){
@@ -283,17 +284,19 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
                         }
                     }
                 }
+                inner_li += '</td>';
 
-                inner_li += json.playerData[i].id+', '+json.playerData[i].name;
+                inner_li += '<td>'+json.playerData[i].id+'</td><td>'+json.playerData[i].name+'</td>';
 
+                inner_li += '<td>';
                 if(json.playerData[i].vote==true){
                     inner_li += " agree";
                 }else if(json.playerData[i].vote==false){
                     inner_li += " disagree";
                 }
-
                 if(json.playerData[i].ready) inner_li += ' ready';
-                inner_li += '</li>';
+                inner_li += '</td>';
+                inner_li += '</tr>';
             }
             playerList.html(inner_li);
             player_data = json.playerData;
