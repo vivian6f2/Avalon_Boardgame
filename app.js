@@ -27,7 +27,7 @@ var states = ["wait","randomCharacters","sendMission","vote","mission",
 var state = states[0]; //initial states
 
 //player information
-var player_data = []; //id, name, role[special character, evil/good], ready
+var player_data = []; //id, name, role[special character, evil/good], ready, color
 var player_id = 0; //for creating unique id
 var room_owner_id = null; //room owner
 var leader_id = null; //leader to choose members
@@ -340,7 +340,7 @@ io.on('connection', function (socket) {
 
 
     //add this player into player data
-    var one_player_data = {id:player_id,name:client.name,role:null,ready:false,vote:null}; //id & name & character & ready
+    var one_player_data = {id:player_id,name:client.name,role:null,ready:false,vote:null,color:client.color}; //id & name & character & ready
     client.id = one_player_data['id'];
     client.index = player_data.length;
     player_data.push(one_player_data);
