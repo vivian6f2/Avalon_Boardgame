@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Avalon</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <script src="javascripts/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="javascripts/chat.js"></script>
+</head>
+<body>
+    <h1 class="allStates">Avalon</h1>
+    <span id="stateDisplay" class="allStates">state : wait</span>
+    <div class="allStates">
+        <span id="roomOwner"></span><br>
+        <span id="lastGameWinner"></span><br>
+        <span id="lastMissionResult"></span><br>
+        <span>Player List</span>
+        <ul id="playerList">
+        </ul>
+    </div>
+    <div class="gameDetails">
+        <span id="playerRole"></span><br>
+        <span id="leader"></span><br>
+        <span id="turn"></span><br>
+        <span id="vote_turn"></span><br>
+        <span id="team_size"></span><br>
+        <span id="two_fail"></span><br>
+        <span id="success_time"></span><br>
+        <span id="fail_time"></span><br>
+        
+    </div>
+    <div class="sendMission">
+    </div>
+    <div class="vote">
+    </div>
+    <div class="mission">
+    </div>
+    <div class="update">
+    </div>
+    <div class="findMerlin">
+    </div>
+    <div class="wait">
+        <button id="playButton">play</button>
+        <button id="readyButton">ready</button>
+    </div>
+    <div id="charactersForm" class="randomCharacters">
+        <span id="charactersInformation"></span>
+        <div>
+            <span>Good Characters:</span><br>
+            <input type="checkbox" id="Merlin" value="Merlin" checked="checked" class="good_check">
+            <label for="Merlin">Merlin (Knowns evil, must remain hidden)</label><br>
+            <input type="checkbox" id="Percival" value="Percival" class="good_check">
+            <label for="Percival">Percival (Knows Merlin)</label><br>
+        </div>
+        <div>
+            <span>Evil Characters:</span><br>
+            <input type="checkbox" id="Morgana" value="Morgana" class="evil_check">
+            <label for="Morgana">Morgana (Appears as Merlin)</label><br>
+            <input type="checkbox" id="Assassin" value="Assassin" checked="checked" class="evil_check">
+            <label for="Assassin">Assassin (Minion of Mordred)</label><br>
+            <input type="checkbox" id="Mordred" value="Mordred" class="evil_check">
+            <label for="Mordred">Mordred (Unknown to Merlin)</label><br>
+            <input type="checkbox" id="Oberon" value="Oberon" class="evil_check">
+            <label for="Oberon">Oberon (Unknown to Evil)</label><br>
+        </div>
+        <button id="charactersDoneButton">Done</button>
+    </div>
+    <div class="allStates">
+        <span id="status">Connecting...</span>
+        <input type="text" id="input"/>
+    </div>
+    <div id="content" class="allStates"></div>
+</body>
+</html>
