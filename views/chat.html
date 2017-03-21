@@ -15,9 +15,7 @@
         <span id="roomOwner"></span><br>
         <span id="lastGameWinner"></span><br>
         <span id="lastMissionResult"></span><br>
-        <span>Player List</span>
-        <table id="playerList">
-        </table>
+        
     </div>
     <div class="gameDetails">
         <span id="playerRole"></span><br>
@@ -68,14 +66,21 @@
     </div>
     <br><br>
     <div class="allStates" id="chatRoom">
-        <div id="chatArea">
-            <div id="content"></div>
-        </div>
-        <div>
+        <div class="displayChat" style="display:inline-block;">
+            <div id="chatArea">
+                <div id="content"></div>
+            </div>
             <span id="status">Connecting...</span>
             <input type="text" id="input"/>
         </div>
+
+        <div class="displayChat" style="position:absolute; display:inline-block; top:10px; left:420px;">
+            <!--<span>Player List</span>-->
+            <table id="playerList"></table>
+        </div>
     </div>
+    
+        
     <div class="setName">
         <span id="connectStatus">Connecting...</span>
         <input type="text" id="nameInput"/>
