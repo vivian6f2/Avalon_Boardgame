@@ -1,22 +1,58 @@
 * {padding:0px; margin:0px;}
 body{font-family:tahoma; font-size:12px;margin:10px;}
-p {line-height:18px;padding:2px;}
+p {line-height:18px;padding:2px; }
 div {width:500px;}
+#chatRoom{
+    position: absolute;
+    bottom:0px;
+    margin-bottom: 10px;
+}
 #content { 
+    padding:0px; 
+    background:#ddd; 
+    //border-radius:5px;
+    //border:1px solid #CCC; 
+    margin-bottom:5px; 
+    width:400px;
+    max-height:180px;
+    overflow-x: auto;
+    overflow-y: auto;
+    z-index:10;
+    position: absolute;
+    bottom:0px;
+}
+#chatArea{
+    position:relative;
     padding:5px; 
     background:#ddd; 
     border-radius:5px;
     border:1px solid #CCC; 
     margin-top:10px; 
+    width:400px;
+    height:180px;
+    z-index: 1;
 }
-#input { 
+#input{ 
     border-radius:2px; 
     border:1px solid #ccc;
     margin-top:10px; 
     padding:5px; 
-    width:380px;  
+    width:320px;  
 }
-#status { 
+#nameInput { 
+    border-radius:2px; 
+    border:1px solid #ccc;
+    margin-top:10px; 
+    padding:5px; 
+    width:300px;  
+}
+#status{ 
+    width:80px; 
+    display:block; 
+    float:left; 
+    margin-top:15px; 
+}
+#connectStatus { 
     width:100px; 
     display:block; 
     float:left; 
@@ -47,7 +83,7 @@ div {width:500px;}
     display:none;
 }
 .allStates{
-
+    display:none;
 }
 .gameDetails{
     display:none;
@@ -66,4 +102,7 @@ div {width:500px;}
 }
 .findMerlin{
     display:none;
+}
+.setName{
+    display:initial;
 }

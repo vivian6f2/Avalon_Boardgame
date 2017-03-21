@@ -24,6 +24,9 @@ var evil_characters = [];
 var states = ["wait","randomCharacters","sendMission","vote","mission",
 "missionSuccess","missionFail","update","findMerlin","badWin","goodwin"];
 
+//UI
+var content_height = 0;
+
 //----------------------------------------------------------------------//
 
 $(function () { //$(document).ready(function() { ... }); it means that when document ready, run the function
@@ -38,7 +41,10 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
     socket = io.connect('http://localhost:3000');
     //收到server的连接确认
     socket.on('open',function(){ //socket.emit('open')
-        status.text('Choose a name:');
+        //$('.allStates').css('display','initial');
+        //status.text('Choose a name:');
+        $('#connectStatus').text('Choose a name:');
+        //for(i=0;i<9;i++) content.append('<p style="height:18px;padding:0px;"></p>');
     });
  
  
@@ -79,6 +85,10 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
                     }
                 }else if(json.type == 'join'){
                     //known this player is joined, add needed value
+
+                    $('.allStates').css('display','initial');
+                    $('.setName').css('display','none');
+
                     join_game = json.value;
                     player_id = json.player_id;
                     room_owner_id = json.room_owner_id;
@@ -300,8 +310,9 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
             if(json.state=="wait") init();
         }
  
-        
-        content.prepend(p); 
+        if(p!='') content_height += 20;
+        content.append(p); 
+        content.scrollTop(content_height); //auto scroll to bottom
     });
 //--------------Function to use here--------------//
 //--------------All states--------------//
@@ -404,7 +415,9 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
     //监听message事件，打印消息信息
     socket.on('message',function(json){
         var p = '<p><span style="color:'+json.color+';">' + json.author+'</span> @ '+ json.time+ ' : '+json.text+'</p>';
-        content.prepend(p);
+        content_height += 20;
+        content.append(p);
+        content.scrollTop(content_height); //auto scroll to bottom
     });
  
 //----------------------------------------------------------------------//
@@ -530,12 +543,17 @@ $(function () { //$(document).ready(function() { ... }); it means that when docu
         if (e.keyCode === 13) {
             var msg = $(this).val();
             if (!msg) return;
+            socket.emit('message',msg);
+            $(this).val('');
+        }
+    });
+    $('#nameInput').keydown(function(e) {
+        if (e.keyCode === 13) {
+            var msg = $(this).val();
+            if (!msg) return;
             if(!set_name){
                 socket.emit('player',{name:msg,type:'setName'});                    
                 set_name = true;
-            }
-            else{
-                socket.emit('message',msg);
             }
             $(this).val('');
             if (myName === false) {
