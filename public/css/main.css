@@ -1,7 +1,34 @@
 * {padding:0px; margin:0px;}
-body{font-family:tahoma; font-size:12px;margin:10px;}
+html{height:100%;}
+body{font-family:tahoma; font-size:12px;margin:10px; height:100%;}
 p {line-height:18px;padding:2px; }
 div {width:500px;}
+#gameArea{
+    vertical-align: top;
+    top:0px;
+    left:25%;
+    display:none;
+    width:70%;
+    height:100%;
+    background-color:#DDD;
+}
+#gameTableUp, #gameTableDown{
+    width:100%;
+    height:100%;
+}
+.gameTable{
+    width:100%;
+    height:50%;
+    text-align:center;
+    table-layout: fixed;
+}
+#gameInformArea{
+    vertical-align: top;
+    display:none;
+    width:25%;
+    height:100%; 
+    background-color: #AAA;
+}
 #chatRoom{
     position: absolute;
     bottom:0px;
@@ -15,7 +42,7 @@ div {width:500px;}
     //border:1px solid #CCC; 
     margin-bottom:5px; 
     width:400px;
-    max-height:180px;
+    max-height:126px;
     overflow-x: auto;
     overflow-y: auto;
     z-index:10;
@@ -30,7 +57,7 @@ div {width:500px;}
     border:1px solid #CCC; 
     margin-top:10px; 
     width:400px;
-    height:180px;
+    height:126px;
     z-index: 1;
 }
 #input{ 
