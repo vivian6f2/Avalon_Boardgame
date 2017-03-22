@@ -127,10 +127,10 @@ io.on('connection', function (socket) {
           randomSetCharacters();
           
           changeState(states[2]);
-
-          setLeader();
           //update player list
           updatePlayerList();
+
+          setLeader();
 
         }
         break;
