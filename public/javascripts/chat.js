@@ -1,6 +1,7 @@
 //----------------------------------------------------------------------//
 //public information for avalon game
 var player_data = []; //player list
+var last_player_data = null; //last games player list
 var set_name = false;
 var join_game = false;
 var player_id = null;
@@ -102,6 +103,8 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                 if (json.type == 'chooseCharactersSet') {
                     //alert(room_owner_id + " " + player_id);
                     //show choose character form for room owner
+
+                    last_player_data=null;
                     if (room_owner_id == player_id) {
                         $('.randomCharacters').css('display', 'initial');
                         $('.randomCharacters #charactersInformation').html('There are ' + json.good + ' good and ' + json.evil + ' evil.<br>Choose characters you want to add:');
@@ -133,6 +136,14 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                     } else {
                         //$('.sendMission').html('');
                         $('.sendMission').css('display','none');
+                    }
+                }else if(json.type=='updateTeamMember'){
+                    for(i=0;i<json.player_data.length;i++){
+                        if(json.player_data[i].teammembers){
+                            $('#teammember_'+json.player_data[i].id).css('display','initial');
+                        }else{
+                            $('#teammember_'+json.player_data[i].id).css('display','none');
+                        }
                     }
                 }
                 break;
@@ -209,6 +220,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                 if (json.type == 'endGame') {
                     //show last game winner
                     $('#lastGameWinner').html('Evil Wins!');
+                    last_player_data = json.last_player_data;
 
                 }
                 break;
@@ -216,6 +228,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                 if (json.type == 'endGame') {
                     //show last game winner
                     $('#lastGameWinner').html('Good Wins!');
+                    last_player_data = json.last_player_data;
 
                 }
                 break;
@@ -250,9 +263,9 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
 
             //show leader
             if (leader_id != null) {
-                $('#leader').html('The leader is ' + leader_name + ' (' + leader_id + ')');
+                $('#leader').html('The leader is ' + leader_name + ' (' + leader_id + ')<br><br>');
             } else {
-                $('#leader').html('');
+                $('#leader').html('<br><br>');
             }
 
             if (room_owner_id == null) {
@@ -362,43 +375,62 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             //create show list
             $('#gameTableUp').html('');
             $('#gameTableDown').html('');
-            var show_list = rotateArray(player_id);
+            var show_list = rotateArray(player_data,player_id);
+            if(last_player_data!=null) var last_show_list = rotateArray(last_player_data,player_id);
             //show on the board
             var change_index = Math.ceil(show_list.length/2);
             //alert(change_index);
             for(i=0;i<show_list.length;i++){
                 var inner_html = '<td>';
+                if(show_list[i].id==room_owner_id) inner_html += '<span>room owner</span><br>';
+                else inner_html += '<span></span><br>';
+
+                if(show_list[i].id==leader_id) inner_html += '<span>leader</span><br>';
+                else inner_html += '<span></span><br>';
+
                 inner_html += '<span>';
-                if(player_role!=null){
-                    if(player_id!=show_list[i].id){
-                        if(player_role[0]=='Merlin'){
-                            if(show_list[i].role[1]=='Evil'&&show_list[i].role[0]!='Mordred'){
-                                inner_html += 'Evil';
+                if(last_player_data==null){
+                    if(player_role!=null){
+                        if(player_id!=show_list[i].id){
+                            if(player_role[0]=='Merlin'){
+                                if(show_list[i].role[1]=='Evil'&&show_list[i].role[0]!='Mordred'){
+                                    inner_html += 'Evil';
+                                }
+    
+                            }else if(player_role[0]=='Percival'){
+                                if(show_list[i].role[0]=='Merlin'||show_list[i].role[0]=='Morgana'){
+                                    inner_html += 'Merlin';
+                                }
+    
+                            }else if(player_role[1]=='Evil'){
+                                if(show_list[i].role[1]=='Evil'&&show_list[i].role[0]!='Oberon'){
+                                    inner_html += 'Evil';
+                                }
+    
                             }
-
-                        }else if(player_role[0]=='Percival'){
-                            if(show_list[i].role[0]=='Merlin'||show_list[i].role[0]=='Morgana'){
-                                inner_html += 'Merlin';
-                            }
-
-                        }else if(player_role[1]=='Evil'){
-                            if(show_list[i].role[1]=='Evil'&&show_list[i].role[0]!='Oberon'){
-                                inner_html += 'Evil';
-                            }
-
+                        }
+                        if(player_id==show_list[i].id){
+                            //yourself
+                            inner_html += show_list[i].role[0]+' ('+show_list[i].role[1]+')';
+    
                         }
                     }
-                    if(player_id==show_list[i].id){
-                        //yourself
-                        inner_html += show_list[i].role[0]+' ('+show_list[i].role[1]+')';
-
-                    }
+                }else{
+                    inner_html += last_show_list[i].role[0]+' ('+last_show_list[i].role[1]+')';
                 }
                 inner_html += '</span><br>';
                 inner_html += '<span style="color:'+show_list[i].color+';">'+show_list[i].name+' ('+show_list[i].id+')'+'</span><br>';
-                
-                inner_html += "<div class='sendMission' style='//display:initial;'><input type='checkbox' id='member_" + show_list[i].id + "' value='" + show_list[i].id + "' class='member_check'>";
+
+                inner_html += "<div class='sendMission'><input type='checkbox' id='member_" + show_list[i].id + "' value='" + show_list[i].id + "' class='member_check'>";
                 inner_html += "</div><br>";
+
+                inner_html += '<span id="teammember_'+show_list[i].id+'" style="display:none">team member</span><br>';
+                
+                if(show_list[i].vote==true){
+                    inner_html += '<span>agree</span><br>';
+                }else if(show_list[i].vote==false){
+                    inner_html += '<span>disagree</span><br>';
+                }
                 inner_html += '</td>';
                 if(i>=change_index){
                     //table up
@@ -410,8 +442,8 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             }
         }
     };
-    var rotateArray = function(id){
-        show_list = player_data;
+    var rotateArray = function(array,id){
+        show_list = array;
         //window.alert(player_id);
         while(show_list[0].id!=player_id){
             //window.alert(show_list[0].id);
@@ -559,6 +591,13 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             var inner_input = "<span>Choose the team: (team size is " + team_size + ")</span><br>";
             $('#sendMissionInform').html(inner_input);
         }
+
+        //update player list in server
+        var obj={type:'update'};
+        obj['value']=$(this).attr('checked');
+        obj['id']=$(this).val();
+        socket.emit('player',obj);
+        
         updateTeamMembers();
     });
     $('.sendMission').on('click', '#memberDoneButton', function() {
