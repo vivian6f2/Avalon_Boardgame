@@ -145,6 +145,7 @@ io.on('connection', function (socket) {
             changeState(states[4]);
             missionVote();
             updatePlayerList();
+            updateTeamMemberList();
           }else{
             console.log("voting for team members");
             changeState(states[3]);
@@ -469,10 +470,11 @@ io.on('connection', function (socket) {
     num_of_team = team_assignment[player_data.length-5][0][turn];
     two_fail = team_assignment[player_data.length-5][1];
 
-    //update player listif(show_emit) console.log('emit set leader (all clients)');
+
     socket.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
     socket.broadcast.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
     
+    //update player listu
     updatePlayerList();
     if(show_emit) console.log('emit set leader (all clients)');
     socket.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
@@ -500,9 +502,10 @@ io.on('connection', function (socket) {
 //--------------vote states--------------//
   var voting=function(){
     if(show_emit) console.log('emit start voting (all clients)');
-    socket.emit('system',{state:state,type:'vote',team_members:team_members});
-    socket.broadcast.emit('system',{state:state,type:'vote',team_members:team_members});
-  };
+    socket.emit('system',{state:state,type:'vote',team_members:team_members, player_data:player_data});
+    socket.broadcast.emit('system',{state:state,type:'vote',team_members:team_members, player_data:player_data});
+
+    };
 
   var updateVote=function(value){
     //update vote (true/false) into player_data
@@ -531,6 +534,7 @@ io.on('connection', function (socket) {
         changeState(states[4]);
         missionVote();
         updatePlayerList();
+        updateTeamMemberList();
       }
     }
   }
@@ -541,6 +545,7 @@ io.on('connection', function (socket) {
     if(show_emit) console.log('emit to do mission (all clients)');
     socket.emit('system',{state:state,type:'vote',team_members:team_members});
     socket.broadcast.emit('system',{state:state,type:'vote',team_members:team_members}); 
+
   }
   var updateMissionVote=function(value){
     var two_fail = team_assignment[player_data.length-5][1];
