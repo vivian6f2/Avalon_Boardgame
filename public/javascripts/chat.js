@@ -22,8 +22,7 @@ var evil_characters = [];
 
 //game states
 var states = ["wait", "randomCharacters", "sendMission", "vote", "mission",
-    "missionSuccess", "missionFail", "update", "findMerlin", "badWin", "goodwin"
-];
+    "missionSuccess", "missionFail", "update", "findMerlin", "badWin", "goodwin"];
 
 //UI
 var content_height = 0;
@@ -132,7 +131,8 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                     if (player_id == leader_id) {
                         sendMissionForm();
                     } else {
-                        $('.sendMission').html('');
+                        //$('.sendMission').html('');
+                        $('.sendMission').css('display','none');
                     }
                 }
                 break;
@@ -368,7 +368,37 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             //alert(change_index);
             for(i=0;i<show_list.length;i++){
                 var inner_html = '<td>';
-                inner_html += show_list[i].name+' ('+show_list[i].id+')';
+                inner_html += '<span>';
+                if(player_role!=null){
+                    if(player_id!=show_list[i].id){
+                        if(player_role[0]=='Merlin'){
+                            if(show_list[i].role[1]=='Evil'&&show_list[i].role[0]!='Mordred'){
+                                inner_html += 'Evil';
+                            }
+
+                        }else if(player_role[0]=='Percival'){
+                            if(show_list[i].role[0]=='Merlin'||show_list[i].role[0]=='Morgana'){
+                                inner_html += 'Merlin';
+                            }
+
+                        }else if(player_role[1]=='Evil'){
+                            if(show_list[i].role[1]=='Evil'&&show_list[i].role[0]!='Oberon'){
+                                inner_html += 'Evil';
+                            }
+
+                        }
+                    }
+                    if(player_id==show_list[i].id){
+                        //yourself
+                        inner_html += show_list[i].role[0]+' ('+show_list[i].role[1]+')';
+
+                    }
+                }
+                inner_html += '</span><br>';
+                inner_html += '<span style="color:'+show_list[i].color+';">'+show_list[i].name+' ('+show_list[i].id+')'+'</span><br>';
+                
+                inner_html += "<div class='sendMission' style='//display:initial;'><input type='checkbox' id='member_" + show_list[i].id + "' value='" + show_list[i].id + "' class='member_check'>";
+                inner_html += "</div><br>";
                 inner_html += '</td>';
                 if(i>=change_index){
                     //table up
@@ -420,13 +450,16 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     //--------------sendMission states--------------//
     var sendMissionForm = function() {
         $('.sendMission').css('display', 'initial');
+        $('.member_check').css('display','initial');
+        //alert($('.member_check').val());
+        //$('.sendMission .member_check').css('display','initial');
         var inner_input = "<span>Choose the team: (team size is " + team_size + ")</span><br>";
-        for (i = 0; i < player_data.length; i++) {
+        /*for (i = 0; i < player_data.length; i++) {
             inner_input += "<input type='checkbox' id='member_" + player_data[i].id + "' value='" + player_data[i].id + "' class='member_check'>";
             inner_input += "<label for='member_" + player_data[i].id + "'>" + player_data[i].name + " (" + player_data[i].id + ")</label><br>";
         }
-        inner_input += "<button id='memberDoneButton'>Done</button>";
-        $('.sendMission').html(inner_input);
+        inner_input += "<button id='memberDoneButton'>Done</button>";*/
+        $('#sendMissionInform').html(inner_input);
     };
     var updateTeamMembers = function() {
         team_members = [];
@@ -514,11 +547,17 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     });
     //--------------vote state--------------//
     //--------------sendMission state--------------//
-    $('.sendMission').on('click', '.member_check', function() {
+    $('#gameArea').on('click', '.member_check', function() {
         //window.alert('checked!!');
         if ($('.sendMission .member_check:checked').length > team_size) {
             window.alert('You can only choose ' + team_size + ' team members');
             $(this).attr('checked', false);
+        }else if($('.sendMission .member_check:checked').length == team_size){
+            var inner_input = "<br><button id='memberDoneButton'>Done</button>";
+            $('#sendMissionInform').append(inner_input);
+        }else{
+            var inner_input = "<span>Choose the team: (team size is " + team_size + ")</span><br>";
+            $('#sendMissionInform').html(inner_input);
         }
         updateTeamMembers();
     });
