@@ -168,12 +168,24 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                             //inner_span += "<span>You have to vote</span><br>";
                             to_vote = true;
                         }
+
                     }
+
                     if (to_vote) {
                         inner_span += "<button id='successButton'>success</button>&nbsp;&nbsp;";
                         inner_span += "<button id='failButton'>fail</button>";
                     }
                     $('.mission').html(inner_span);
+
+
+                }else if(json.type=='updateTeamMember'){
+                    for(i=0;i<json.player_data.length;i++){
+                        if(json.player_data[i].teammembers){
+                            $('#teammember_'+json.player_data[i].id).css('display','initial');
+                        }else{
+                            $('#teammember_'+json.player_data[i].id).css('display','none');
+                        }
+                    }
                 }
                 break;
             case "missionSuccess":
