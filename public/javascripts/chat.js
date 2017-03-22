@@ -107,7 +107,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                     last_player_data=null;
                     if (room_owner_id == player_id) {
                         $('.randomCharacters').css('display', 'initial');
-                        $('.randomCharacters #charactersInformation').html('There are ' + json.good + ' good and ' + json.evil + ' evil.<br>Choose characters you want to add:');
+                        $('.randomCharacters #charactersInformation').html('There are ' + json.good + ' good and ' + json.evil + ' evil.<br>Choose characters you want to add:<br>Percival and Morgana are a pair<br>');
 
                         max_good = json.good;
                         max_evil = json.evil;
@@ -632,6 +632,15 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
         if ($('.randomCharacters .good_check:checked').length > max_good) {
             window.alert('You can only choose ' + max_good + ' good characters');
             $(this).attr('checked', false);
+        }else if($(this).val() == 'Percival' && $(this).is(":checked")){
+            $('.randomCharacters #Morgana').attr('checked', true);
+            if($('.randomCharacters .evil_check:checked').length > max_evil){
+                window.alert('Percival and Morgana are a pair, please uncheck one evil character');
+                $(this).attr('checked',false);
+                $('.randomCharacters #Morgana').attr('checked', false);
+            }
+        }else if($(this).val() == 'Percival' && !$(this).is(":checked")){
+            $('.randomCharacters #Morgana').attr('checked', false);
         }
         updateCharactersSet();
     });
@@ -643,6 +652,15 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
         if ($('.randomCharacters .evil_check:checked').length > max_evil) {
             window.alert('You can only choose ' + max_evil + ' evil characters');
             $(this).attr('checked', false);
+        }else if($(this).val() == 'Morgana' && $(this).is(":checked")){
+            $('.randomCharacters #Percival').attr('checked', true);
+            if($('.randomCharacters .good_check:checked').length > max_good){
+                window.alert('Percival and Morgana are a pair, please uncheck one good character');
+                $(this).attr('checked',false);
+                $('.randomCharacters #Percival').attr('checked', false);
+            }
+        }else if($(this).val() == 'Morgana' && !$(this).is(":checked")){
+            $('.randomCharacters #Percival').attr('checked', false);
         }
         updateCharactersSet();
     });
