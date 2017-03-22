@@ -27,7 +27,7 @@ var states = ["wait","randomCharacters","sendMission","vote","mission",
 var state = states[0]; //initial states
 
 //player information
-var player_data = []; //id, name, role[special character, evil/good], ready, color
+var player_data = []; //id, name, role[special character, evil/good], ready, color, teammembers
 var player_id = 0; //for creating unique id
 var room_owner_id = null; //room owner
 var leader_id = null; //leader to choose members
@@ -127,8 +127,6 @@ io.on('connection', function (socket) {
           randomSetCharacters();
           
           changeState(states[2]);
-          //update player list
-          updatePlayerList();
 
           setLeader();
 
@@ -152,6 +150,14 @@ io.on('connection', function (socket) {
             changeState(states[3]);
             voting();
           }
+        }else if(json.type=='update'){
+          //update if teammembers or not
+          for(i=0;i<player_data.length;i++){
+            if(player_data[i]['id']==json.id){
+              player_data[i]['teammembers']=json.value;            }
+          }
+          updateTeamMemberList();
+
         }
         break;
       case "vote":
@@ -191,8 +197,8 @@ io.on('connection', function (socket) {
           }
           changeState(new_state);
           if(show_emit) console.log("emit end game (all clients)");
-          socket.emit('system',{state:state,type:'endGame'});
-          socket.broadcast.emit('system',{state:state,type:'endGame'});
+          socket.emit('system',{state:state,type:'endGame',last_player_data:player_data});
+          socket.broadcast.emit('system',{state:state,type:'endGame',last_player_data:player_data});
           init();
           changeState(states[0]);
           updatePlayerList();
@@ -320,6 +326,7 @@ io.on('connection', function (socket) {
       player_data[i]['role']=null;
       player_data[i]['ready']=false;
       player_data[i]['vote']=null;
+      player_data[i]['teammembers']=false;
     }
   };
 //--------------All states--------------//
@@ -340,7 +347,7 @@ io.on('connection', function (socket) {
 
 
     //add this player into player data
-    var one_player_data = {id:player_id,name:client.name,role:null,ready:false,vote:null,color:client.color}; //id & name & character & ready
+    var one_player_data = {id:player_id,name:client.name,role:null,ready:false,vote:null,color:client.color,teammembers:false}; //id & name & character & ready
     client.id = one_player_data['id'];
     client.index = player_data.length;
     player_data.push(one_player_data);
@@ -378,12 +385,14 @@ io.on('connection', function (socket) {
     max_evil = good_evil_count[player_data.length-5][1];
   };
   var askCharactersSet=function(){
-
+    //clear last player data
     //console.log('room owner, ask characters set');
     updatePlayerList();
     var ask = {type:'chooseCharactersSet',state:state,good:max_good,evil:max_evil};
     if(show_emit) console.log('emit ask room owner '+client.name+' ('+client.id+') to set characters (one client)');
     socket.emit('system',ask);
+    socket.broadcast.emit('system',ask);
+    
   };
   var updateAllReadyState=function(){
     all_ready = true; //check if all the players are ready
@@ -439,6 +448,8 @@ io.on('connection', function (socket) {
 //--------------randomCharacters states--------------//
 //--------------sendMission states--------------//
   var setLeader=function(){
+    resetTeamMembers();
+    updateTeamMemberList();
     if(leader_id==null){
       leader_id = player_data[ Math.floor((Math.random() * player_data.length)) ]['id'];
     }else{
@@ -457,6 +468,12 @@ io.on('connection', function (socket) {
     //console.log(turn);
     num_of_team = team_assignment[player_data.length-5][0][turn];
     two_fail = team_assignment[player_data.length-5][1];
+
+    //update player listif(show_emit) console.log('emit set leader (all clients)');
+    socket.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
+    socket.broadcast.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
+    
+    updatePlayerList();
     if(show_emit) console.log('emit set leader (all clients)');
     socket.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
     socket.broadcast.emit('system',{state:state,type:'setLeader',leader_id:leader_id,team_size:num_of_team,two_fail:two_fail,turn:turn,vote_turn:vote_turn});
@@ -468,7 +485,17 @@ io.on('connection', function (socket) {
       player_data[i]['vote']=null;
     }
   }
+  var resetTeamMembers=function(){
+    for(i=0;i<player_data.length;i++){
+      player_data[i]['teammembers']=false;
+    }
 
+  }
+  var updateTeamMemberList=function(){
+    if(show_emit) console.log('emit update team members (all clients)');
+    socket.emit('system',{state:state, type:'updateTeamMember', player_data:player_data});
+    socket.broadcast.emit('system',{state:state, type:'updateTeamMember', player_data:player_data});
+  }
 //--------------sendMission states--------------//
 //--------------vote states--------------//
   var voting=function(){
@@ -497,8 +524,6 @@ io.on('connection', function (socket) {
         vote_turn++;
         changeState(states[2]);
         setLeader();
-        //update player list
-        updatePlayerList();
 
       }else if(agree>disagree){
       //if agree>disagree, go to mission state
@@ -568,10 +593,11 @@ var updateGame=function(){
   if(fail_time>=3){//Evil win
     changeState(states[9]);
     if(show_emit) console.log('emit end game (all clients)');
-    socket.emit('system',{state:state,type:'endGame'});
-    socket.broadcast.emit('system',{state:state,type:'endGame'});
+    socket.emit('system',{state:state,type:'endGame',last_player_data:player_data});
+    socket.broadcast.emit('system',{state:state,type:'endGame',last_player_data:player_data});
     init();
     changeState(states[0]);
+    updatePlayerList();
   }else if(success_time>=3){//go into find merlin
     changeState(states[8]);
     var kill_list = [];
@@ -584,11 +610,11 @@ var updateGame=function(){
     if(show_emit) console.log('emit kill Merlin and kill list (all clients)');
     socket.emit('system',{state:state,type:'kill',kill_list:kill_list});
     socket.broadcast.emit('system',{state:state,type:'kill',kill_list:kill_list});
+    updatePlayerList();
   }else{
     changeState(states[2]);
     setLeader();
   }
-  updatePlayerList();
 }
 //--------------update states--------------//
 //--------------findMerlin states--------------//
