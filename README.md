@@ -21,5 +21,5 @@ node app.js
 
 Demo
 ==================
-after running app.js
+after install, 
 http://localhost:3000
