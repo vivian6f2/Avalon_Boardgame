@@ -9,60 +9,73 @@
     <script src="javascripts/chat.js"></script>
 </head>
 <body>
-    <h1>Avalon</h1>
-    <span id="stateDisplay" class="allStates">state : wait</span><br>
-    <div class="allStates">
-        <span id="roomOwner"></span><br>
-        <span id="lastGameWinner"></span><br>
-        <span id="lastMissionResult"></span><br>
-        
+    <h1 style="height:5%;">Avalon</h1>
+    <div class="setName">
+        <span id="connectStatus">Connecting...</span>
+        <input type="text" id="nameInput"/>
     </div>
-    <div class="gameDetails">
-        <span id="playerRole"></span><br>
-        <span id="leader"></span><br>
-        <span id="turn"></span><br>
-        <span id="vote_turn"></span><br>
-        <span id="team_size"></span><br>
-        <span id="two_fail"></span><br>
-        <span id="success_time"></span><br>
-        <span id="fail_time"></span><br>
-        
-    </div>
-    <div class="sendMission">
-    </div>
-    <div class="vote">
-    </div>
-    <div class="mission">
-    </div>
-    <div class="update">
-    </div>
-    <div class="findMerlin">
-    </div>
-    <div class="wait">
-        <button id="playButton">play</button>
-        <button id="readyButton">ready</button>
-    </div>
-    <div id="charactersForm" class="randomCharacters">
-        <span id="charactersInformation"></span>
-        <div>
-            <span>Good Characters:</span><br>
-            <input type="checkbox" id="Merlin" value="Merlin" checked="checked" class="good_check">
-            <label for="Merlin">Merlin (Knowns evil, must remain hidden)</label><br>
-            <input type="checkbox" id="Percival" value="Percival" class="good_check">
-            <label for="Percival">Percival (Knows Merlin)</label><br>
+    <div style="//background-color: #888888;width:100%; height:60%;">
+        <div id="gameInformArea" style="">
+            <span id="stateDisplay" class="allStates">state : wait</span><br>
+            <div class="allStates">
+                <span id="roomOwner"></span><br>
+                <span id="lastGameWinner"></span><br>
+                <span id="lastMissionResult"></span><br>
+                
+            </div>
+            <div class="gameDetails">
+                <span id="playerRole"></span><br>
+                <span id="leader"></span><br>
+                <span id="turn"></span><br>
+                <span id="vote_turn"></span><br>
+                <span id="team_size"></span><br>
+                <span id="two_fail"></span><br>
+                <span id="success_time"></span><br>
+                <span id="fail_time"></span><br>
+                
+            </div>
+            <div class="sendMission">
+            </div>
+            <div class="vote">
+            </div>
+            <div class="mission">
+            </div>
+            <div class="update">
+            </div>
+            <div class="findMerlin">
+            </div>
+            <div class="wait">
+                <button id="playButton">play</button>
+                <button id="readyButton">ready</button>
+            </div>
+            <div id="charactersForm" class="randomCharacters">
+                <span id="charactersInformation"></span>
+                <div>
+                    <span>Good Characters:</span><br>
+                    <input type="checkbox" id="Merlin" value="Merlin" checked="checked" class   =" good_check">
+                    <label for="Merlin">Merlin (Knowns evil, must remain hidden)</label><br>
+                    <input type="checkbox" id="Percival" value="Percival" class="good_check">
+                    <label for="Percival">Percival (Knows Merlin)</label><br>
+                </div>
+                <div>
+                    <span>Evil Characters:</span><br>
+                    <input type="checkbox" id="Morgana" value="Morgana" class="evil_check">
+                    <label for="Morgana">Morgana (Appears as Merlin)</label><br>
+                    <input type="checkbox" id="Assassin" value="Assassin" checked="checked"     class   ="evil_check">
+                    <label for="Assassin">Assassin (Minion of Mordred)</label><br>
+                    <input type="checkbox" id="Mordred" value="Mordred" class="evil_check">
+                    <label for="Mordred">Mordred (Unknown to Merlin)</label><br>
+                    <input type="checkbox" id="Oberon" value="Oberon" class="evil_check">
+                    <label for="Oberon">Oberon (Unknown to Evil)</label><br>
+                </div>
+                <button id="charactersDoneButton">Done</button>
+            </div>
         </div>
-        <div>
-            <span>Evil Characters:</span><br>
-            <input type="checkbox" id="Morgana" value="Morgana" class="evil_check">
-            <label for="Morgana">Morgana (Appears as Merlin)</label><br>
-            <input type="checkbox" id="Assassin" value="Assassin" checked="checked" class="evil_check">
-            <label for="Assassin">Assassin (Minion of Mordred)</label><br>
-            <input type="checkbox" id="Mordred" value="Mordred" class="evil_check">
-            <label for="Mordred">Mordred (Unknown to Merlin)</label><br>
-            <input type="checkbox" id="Oberon" value="Oberon" class="evil_check">
-            <label for="Oberon">Oberon (Unknown to Evil)</label><br>
+        <div id="gameArea">
+            <table class="gameTable"><tr id="gameTableUp"></tr></table>
+            <table class="gameTable"><tr id="gameTableDown"></tr></table>
         </div>
-        <button id="charactersDoneButton">Done</button>
+
     </div>
     <br><br>
     <div class="allStates" id="chatRoom">
@@ -73,17 +86,13 @@
             <span id="status">Connecting...</span>
             <input type="text" id="input"/>
         </div>
-
-        <div class="displayChat" style="position:absolute; display:inline-block; top:10px; left:420px;">
+    
+        <div class="displayChat" style="position:absolute; display:inline-block; top:10px   ; left:420px;">
             <!--<span>Player List</span>-->
             <table id="playerList"></table>
         </div>
     </div>
-    
         
-    <div class="setName">
-        <span id="connectStatus">Connecting...</span>
-        <input type="text" id="nameInput"/>
-    </div>
+    
 </body>
 </html>
