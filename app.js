@@ -364,6 +364,7 @@ io.on('connection', function (socket) {
     if(show_emit) console.log("emit new state : "+room_list[client.room_id].state+" (all clients)");
     socket.emit('system',{state:room_list[client.room_id].state,type:'changeState',room_id:client.room_id});
     socket.broadcast.emit('system',{state:room_list[client.room_id].state,type:'changeState',room_id:client.room_id});
+    socket.broadcast.emit('updateRoom',{room_list:room_list});
   };
   var resetPlayerData=function(){
     for(i=0;i<room_list[client.room_id].player_data.length;i++){
