@@ -1,4 +1,8 @@
 //----------------------------------------------------------------------//
+//room id
+var room_id = null;
+var room_name = "";
+
 //public information for avalon game
 var player_data = []; //player list
 var last_player_data = null; //last games player list
@@ -41,309 +45,385 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     //建立websocket连接
     socket = io.connect('http://localhost:3000');
     //收到server的连接确认
-    socket.on('open', function() { //socket.emit('open')
-        //$('.allStates').css('display','initial');
-        //status.text('Choose a name:');
-        $('#connectStatus').text('Choose a name:');
-        //for(i=0;i<9;i++) content.append('<p style="height:18px;padding:0px;"></p>');
+    socket.on('open', function(json) { //socket.emit('open')
+        room_id = json.room_id;
+        if(room_id==null){
+            inner_table = "<span>Create new room: </span>";
+            inner_table += "<input type='text' id='roomInput'/><br><br>";
+            inner_table += "Room List";
+            inner_table += "<table><tr>";
+            inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
+            inner_table += "</tr>";
+            //console.log(json.room_list);
+            for(var key in json.room_list){
+                //alert(json.room_list[key].room_name);
+                inner_table += "<tr><td>";
+                inner_table += json.room_list[key].room_name;
+                inner_table += "</td><td>";
+                inner_table += json.room_list[key].player_data.length;
+                inner_table += "</td><td>";
+                inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+                inner_table += "</td>";
+                inner_table += "</tr>";
+            }
+            inner_table += "</table>";
+            $('.findRoom').html(inner_table);
+
+        }else{
+            $('.findRoom').css('display','none');
+            $('.room').css('display','initial');
+            $('#connectStatus').text('Choose a name:');
+            $('#title').html('Avalon ' + json.room_name);
+        }
     });
 
-
+    socket.on('updateRoom', function(json){
+        inner_table = "<span>Create new room: </span>";
+        inner_table += "<input type='text' id='roomInput'/><br><br>";
+        inner_table += "Room List";
+        inner_table += "<table><tr>";
+        inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
+        inner_table += "</tr>";
+        //console.log(json.room_list);
+        for(var key in json.room_list){
+            //alert(json.room_list[key].room_name);
+            inner_table += "<tr><td>";
+            inner_table += json.room_list[key].room_name;
+            inner_table += "</td><td>";
+            inner_table += json.room_list[key].player_data.length;
+            inner_table += "</td><td>";
+            inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+            inner_table += "</td>";
+            inner_table += "</tr>";
+        }
+        inner_table += "</table>";
+        $('.findRoom').html(inner_table);
+    });
 
     //----------------------------------------------------------------------//
     //gameplay programming here!
     //--------------All states are different--------------//
     //监听system事件，判断welcome或者disconnect，打印系统消息信息
     socket.on('system', function(json) {
-        var p = '';
-        switch (json.state) {
-            case "wait":
-                if (json.type === 'welcome') {
-                    //new player login
-                    if (myName == json.text) status.text(myName + ': ').css('color', json.color);
-                    p = '<p style="background:' + json.color + '">system  @ ' + json.time + ' : Welcome ' + json.text + '</p>';
-                } else if (json.type == 'full') {
-                    //the server is full
-                    window.alert(json.text);
-                    set_name = false;
-                    myName = false;
-                    join_game = false;
-                } else if (json.type == 'ready' && join_game) {
-                    //show the ready button
-                    $('.wait #readyButton').css('display', 'initial');
-                } else if (json.type == 'hideReady' && join_game) {
-                    //hide the ready button
-                    $('.wait #readyButton').css('display', 'none');
-                    $('.wait #readyButton').html('ready');
-                } else if (json.type == 'allReady' && join_game) {
-                    //all ready, show the play button for room owner
-                    if (room_owner_id == player_id && json.value) {
-                        $('.wait #playButton').css('display', 'initial');
-                        $('.wait #playButton').html('play');
-                    } else {
-                        $('.wait #playButton').css('display', 'none');
-                        $('.wait #playButton').html('play');
+        if(json.room_id==room_id){
+            var p = '';
+            switch (json.state) {
+                case "wait":
+                    if (json.type === 'welcome') {
+                        //new player login
+                        if (myName == json.text) status.text(myName + ': ').css('color', json.color);
+                        p = '<p style="background:' + json.color + '">system  @ ' + json.time + ' : Welcome ' + json.text + '</p>';
+                    } else if (json.type == 'full') {
+                        //the server is full
+                        window.alert(json.text);
+                        set_name = false;
+                        myName = false;
+                        join_game = false;
+                    } else if (json.type == 'ready' && join_game) {
+                        //show the ready button
+                        $('.wait #readyButton').css('display', 'initial');
+                    } else if (json.type == 'hideReady' && join_game) {
+                        //hide the ready button
+                        $('.wait #readyButton').css('display', 'none');
+                        $('.wait #readyButton').html('ready');
+                    } else if (json.type == 'allReady' && join_game) {
+                        //all ready, show the play button for room owner
+                        if (room_owner_id == player_id && json.value) {
+                            $('.wait #playButton').css('display', 'initial');
+                            $('.wait #playButton').html('play');
+                        } else {
+                            $('.wait #playButton').css('display', 'none');
+                            $('.wait #playButton').html('play');
+                        }
+                    } else if (json.type == 'join') {
+                        //known this player is joined, add needed value
+    
+                        $('.allStates').css('display', 'initial');
+                        $('.setName').css('display', 'none');
+                        $('.displayChat').css('display', 'inline-block');
+                        $('#gameInformArea').css('display','inline-block');
+                        $('#gameArea').css('display','inline-block');
+    
+                        join_game = json.value;
+                        player_id = json.player_id;
+                        room_owner_id = json.room_owner_id;
                     }
-                } else if (json.type == 'join') {
-                    //known this player is joined, add needed value
-
-                    $('.allStates').css('display', 'initial');
-                    $('.setName').css('display', 'none');
-                    $('.displayChat').css('display', 'inline-block');
-                    $('#gameInformArea').css('display','inline-block');
-                    $('#gameArea').css('display','inline-block');
-
-                    join_game = json.value;
-                    player_id = json.player_id;
-                    room_owner_id = json.room_owner_id;
-                }
-                break;
-            case "randomCharacters":
-                $('.randomCharacters').css('display', 'none');
-                if (json.type == 'chooseCharactersSet') {
-                    //alert(room_owner_id + " " + player_id);
-                    //show choose character form for room owner
-
-                    last_player_data=null;
-                    if (room_owner_id == player_id) {
-                        $('.randomCharacters').css('display', 'initial');
-                        $('.randomCharacters #charactersInformation').html('There are ' + json.good + ' good and ' + json.evil + ' evil.<br>Choose characters you want to add:<br>Percival and Morgana are a pair<br>');
-
-                        max_good = json.good;
-                        max_evil = json.evil;
-                        updateCharactersSet();
-                    } else {
-                        $('.randomCharacters').css('display', 'none');
-                    }
-                }
-                break;
-            case "sendMission":
-                if (json.type == 'setLeader') {
-                    //set leader and if this player is leader, show choose members form
-                    $('.gameDetails').css('display', 'initial');
-                    leader_id = json.leader_id;
-                    team_size = json.team_size;
-                    $('#turn').html('Round ' + (json.turn + 1));
-                    $('#vote_turn').html('Vote ' + (json.vote_turn) + ' times');
-                    if (json.two_fail && json.turn == 3) {
-                        $('#two_fail').html("Need two fail this time");
-                    } else {
-                        $('#two_fail').html("");
-                    }
-
-                    if (player_id == leader_id) {
-                        sendMissionForm();
-                    } else {
-                        //$('.sendMission').html('');
-                        $('.sendMission').css('display','none');
-                    }
-                }else if(json.type=='updateTeamMember'){
-                    for(i=0;i<json.player_data.length;i++){
-                        if(json.player_data[i].teammembers){
-                            $('#teammember_'+json.player_data[i].id).css('display','initial');
-                        }else{
-                            $('#teammember_'+json.player_data[i].id).css('display','none');
+                    break;
+                case "randomCharacters":
+                    $('.randomCharacters').css('display', 'none');
+                    if (json.type == 'chooseCharactersSet') {
+                        //alert(room_owner_id + " " + player_id);
+                        //show choose character form for room owner
+    
+                        last_player_data=null;
+                        if (room_owner_id == player_id) {
+                            $('.randomCharacters').css('display', 'initial');
+                            $('.randomCharacters #charactersInformation').html('There are ' + json.good + ' good and ' + json.evil + ' evil.<br>Choose characters you want to add:<br>Percival and Morgana are a pair<br>');
+    
+                            max_good = json.good;
+                            max_evil = json.evil;
+                            updateCharactersSet();
+                        } else {
+                            $('.randomCharacters').css('display', 'none');
                         }
                     }
-                }
-                break;
-            case "vote":
-                if (json.type == 'vote') {
-                    //show team members and vote form
-                    team_members = json.team_members;
-                    voteForm();
-                }
-                break;
-            case "mission":
-                if (json.type == 'vote') {
-                    //check if this player is in the team members, show success and fail button
-                    team_members = json.team_members;
-                    $('.mission').css('display', 'initial');
-                    var to_vote = false;
-                    var inner_span = "<span>Team members are:</span><br>";
-                    //inner_span += player_id + "<br>";
-                    for (i = 0; i < team_members.length; i++) {
-                        inner_span += "<span>" + team_members[i][1] + " (" + team_members[i][0] + ")<span><br>";
-                        if (team_members[i][0] == player_id) {
-                            //inner_span += "<span>You have to vote</span><br>";
-                            to_vote = true;
+                    break;
+                case "sendMission":
+                    if (json.type == 'setLeader') {
+                        //set leader and if this player is leader, show choose members form
+                        $('.gameDetails').css('display', 'initial');
+                        leader_id = json.leader_id;
+                        team_size = json.team_size;
+                        $('#turn').html('Round ' + (json.turn + 1));
+                        $('#vote_turn').html('Vote ' + (json.vote_turn) + ' times');
+                        if (json.two_fail && json.turn == 3) {
+                            $('#two_fail').html("Need two fail this time");
+                        } else {
+                            $('#two_fail').html("");
                         }
-
-                    }
-
-                    if (to_vote) {
-                        inner_span += "<button id='successButton'>success</button>&nbsp;&nbsp;";
-                        inner_span += "<button id='failButton'>fail</button>";
-                    }
-                    $('.mission').html(inner_span);
-
-
-                }else if(json.type=='updateTeamMember'){
-                    for(i=0;i<json.player_data.length;i++){
-                        if(json.player_data[i].teammembers){
-                            $('#teammember_'+json.player_data[i].id).css('display','initial');
-                        }else{
-                            $('#teammember_'+json.player_data[i].id).css('display','none');
+    
+                        if (player_id == leader_id) {
+                            sendMissionForm();
+                        } else {
+                            //$('.sendMission').html('');
+                            $('.sendMission').css('display','none');
+                        }
+                    }else if(json.type=='updateTeamMember'){
+                        for(i=0;i<json.player_data.length;i++){
+                            if(json.player_data[i].teammembers){
+                                $('#teammember_'+json.player_data[i].id).css('display','initial');
+                            }else{
+                                $('#teammember_'+json.player_data[i].id).css('display','none');
+                            }
                         }
                     }
-                }
-                break;
-            case "missionSuccess":
-                if (json.type == 'update') {
-                    //update game detail
-                    $('.update').css('display', 'initial');
-                    var inner_span = "<span>Mission success</span><br>";
-                    $('.update').html(inner_span);
-                    $('#success_time').html("Success : " + json.detail[2]);
-                    $('#fail_time').html("Fail : " + json.detail[3]);
-                    $('#lastMissionResult').html('Last mission: ' + json.detail[0] + ' success,' + json.detail[1] + ' fail');
-                }
-                break;
-            case "missionFail":
-                if (json.type == 'update') {
-                    //update game detail
-                    $('.update').css('display', 'initial');
-                    var inner_span = "<span>Mission fail</span><br>";
-                    inner_span += json.detail[0] + " success " + json.detail[1] + " fail";
-                    $('.update').html(inner_span);
-                    $('#success_time').html("Success : " + json.detail[2]);
-                    $('#fail_time').html("Fail : " + json.detail[3]);
-                    $('#lastMissionResult').html('Last mission: ' + json.detail[0] + ' success,' + json.detail[1] + ' fail');
-                }
-
-                break;
-            case "update":
-                break;
-            case "findMerlin":
-                if (json.type == 'kill') {
-                    //check if this player is assassin, show find merlin form
-                    var is_assassin = false;
-                    for (i = 0; i < player_data.length; i++) {
-                        if (player_data[i].id == player_id && player_data[i].role[0] == 'Assassin') {
-                            is_assassin = true;
+                    break;
+                case "vote":
+                    if (json.type == 'vote') {
+                        //show team members and vote form
+                        team_members = json.team_members;
+                        voteForm();
+                    }
+                    break;
+                case "mission":
+                    if (json.type == 'vote') {
+                        //check if this player is in the team members, show success and fail button
+                        team_members = json.team_members;
+                        $('.mission').css('display', 'initial');
+                        var to_vote = false;
+                        var inner_span = "<span>Team members are:</span><br>";
+                        //inner_span += player_id + "<br>";
+                        for (i = 0; i < team_members.length; i++) {
+                            inner_span += "<span>" + team_members[i][1] + " (" + team_members[i][0] + ")<span><br>";
+                            if (team_members[i][0] == player_id) {
+                                //inner_span += "<span>You have to vote</span><br>";
+                                to_vote = true;
+                            }
+    
+                        }
+    
+                        if (to_vote) {
+                            inner_span += "<button id='successButton'>success</button>&nbsp;&nbsp;";
+                            inner_span += "<button id='failButton'>fail</button>";
+                        }
+                        $('.mission').html(inner_span);
+    
+    
+                    }else if(json.type=='updateTeamMember'){
+                        for(i=0;i<json.player_data.length;i++){
+                            if(json.player_data[i].teammembers){
+                                $('#teammember_'+json.player_data[i].id).css('display','initial');
+                            }else{
+                                $('#teammember_'+json.player_data[i].id).css('display','none');
+                            }
                         }
                     }
-                    if (is_assassin) {
-                        findMerlinForm(json.kill_list);
+                    break;
+                case "missionSuccess":
+                    if (json.type == 'update') {
+                        //update game detail
+                        $('.update').css('display', 'initial');
+                        var inner_span = "<span>Mission success</span><br>";
+                        $('.update').html(inner_span);
+                        $('#success_time').html("Success : " + json.detail[2]);
+                        $('#fail_time').html("Fail : " + json.detail[3]);
+                        $('#lastMissionResult').html('Last mission: ' + json.detail[0] + ' success,' + json.detail[1] + ' fail');
                     }
+                    break;
+                case "missionFail":
+                    if (json.type == 'update') {
+                        //update game detail
+                        $('.update').css('display', 'initial');
+                        var inner_span = "<span>Mission fail</span><br>";
+                        inner_span += json.detail[0] + " success " + json.detail[1] + " fail";
+                        $('.update').html(inner_span);
+                        $('#success_time').html("Success : " + json.detail[2]);
+                        $('#fail_time').html("Fail : " + json.detail[3]);
+                        $('#lastMissionResult').html('Last mission: ' + json.detail[0] + ' success,' + json.detail[1] + ' fail');
+                    }
+    
+                    break;
+                case "update":
+                    break;
+                case "findMerlin":
+                    if (json.type == 'kill') {
+                        //check if this player is assassin, show find merlin form
+                        var is_assassin = false;
+                        for (i = 0; i < player_data.length; i++) {
+                            if (player_data[i].id == player_id && player_data[i].role[0] == 'Assassin') {
+                                is_assassin = true;
+                            }
+                        }
+                        if (is_assassin) {
+                            findMerlinForm(json.kill_list);
+                        }
+                    }
+                    break;
+                case "evilWin":
+                    if (json.type == 'endGame') {
+                        //show last game winner
+                        $('#lastGameWinner').html('Evil Wins!');
+                        last_player_data = json.last_player_data;
+    
+                    }
+                    break;
+                case "goodWin":
+                    if (json.type == 'endGame') {
+                        //show last game winner
+                        $('#lastGameWinner').html('Good Wins!');
+                        last_player_data = json.last_player_data;
+    
+                    }
+                    break;
+                default:
+                    break;
+            }
+            //--------------All states are different--------------//
+    
+            //--------------All states are same--------------//
+            if (json.type == 'disconnect') {
+                if (json.text != false) {
+                    p = '<p style="background:' + json.color + '">system  @ ' + json.time + ' : Bye ' + json.text + '</p>';
                 }
-                break;
-            case "evilWin":
-                if (json.type == 'endGame') {
-                    //show last game winner
-                    $('#lastGameWinner').html('Evil Wins!');
-                    last_player_data = json.last_player_data;
-
+    
+            } else if (json.type == 'playerList') {
+                //update player list
+                inner_li = '';
+                playerList.html('');
+                //update room owner
+                room_owner_id = json.room_owner_id;
+    
+                //find players role and leaders name
+                for (i = 0; i < json.playerData.length; i++) {
+                    if (json.playerData[i].id == player_id) player_role = json.playerData[i].role;
+                    if (leader_id != null && leader_id == json.playerData[i].id) leader_name = json.playerData[i].name;
                 }
-                break;
-            case "goodWin":
-                if (json.type == 'endGame') {
-                    //show last game winner
-                    $('#lastGameWinner').html('Good Wins!');
-                    last_player_data = json.last_player_data;
-
-                }
-                break;
-            default:
-                break;
-        }
-        //--------------All states are different--------------//
-
-        //--------------All states are same--------------//
-        if (json.type == 'disconnect') {
-            if (json.text != false) {
-                p = '<p style="background:' + json.color + '">system  @ ' + json.time + ' : Bye ' + json.text + '</p>';
-            }
-
-        } else if (json.type == 'playerList') {
-            //update player list
-            inner_li = '';
-            playerList.html('');
-            //update room owner
-            room_owner_id = json.room_owner_id;
-
-            //find players role and leaders name
-            for (i = 0; i < json.playerData.length; i++) {
-                if (json.playerData[i].id == player_id) player_role = json.playerData[i].role;
-                if (leader_id != null && leader_id == json.playerData[i].id) leader_name = json.playerData[i].name;
-            }
-            if (player_role != null) {
-                $('#playerRole').html('You are ' + player_role[0] + ' (' + player_role[1] + ')!');
-            } else {
-                $('#playerRole').html('');
-            }
-
-            //show leader
-            if (leader_id != null) {
-                $('#leader').html('The leader is ' + leader_name + ' (' + leader_id + ')<br><br>');
-            } else {
-                $('#leader').html('<br><br>');
-            }
-
-            if (room_owner_id == null) {
-                $('#roomOwner').html('');
-            }
-            for (i = 0; i < json.playerData.length; i++) {
-                if (json.playerData[i].id == room_owner_id) {
-                    $('#roomOwner').html('Room owner: ' + json.playerData[i].name + ' (' + json.playerData[i].id + ')');
-                }
-                if (json.playerData[i].id == player_id) inner_li += '<tr style="font-weight:bold;color:' + json.playerData[i].color + ';">';
-                else inner_li += '<tr style="color:' + json.playerData[i].color + ';">';
-
-                inner_li += '<td style="width:20px;">';
                 if (player_role != null) {
-                    if (player_role[0] == 'Merlin') {
-                        if (json.playerData[i].role[1] == 'Evil' && json.playerData[i].role[0] != 'Mordred') {
-                            inner_li += 'Evil ';
+                    $('#playerRole').html('You are ' + player_role[0] + ' (' + player_role[1] + ')!');
+                } else {
+                    $('#playerRole').html('');
+                }
+    
+                //show leader
+                if (leader_id != null) {
+                    $('#leader').html('The leader is ' + leader_name + ' (' + leader_id + ')<br><br>');
+                } else {
+                    $('#leader').html('<br><br>');
+                }
+    
+                if (room_owner_id == null) {
+                    $('#roomOwner').html('');
+                }
+                for (i = 0; i < json.playerData.length; i++) {
+                    if (json.playerData[i].id == room_owner_id) {
+                        $('#roomOwner').html('Room owner: ' + json.playerData[i].name + ' (' + json.playerData[i].id + ')');
+                    }
+                    if (json.playerData[i].id == player_id) inner_li += '<tr style="font-weight:bold;color:' + json.playerData[i].color + ';">';
+                    else inner_li += '<tr style="color:' + json.playerData[i].color + ';">';
+    
+                    inner_li += '<td style="width:20px;">';
+                    if (player_role != null) {
+                        if (player_role[0] == 'Merlin') {
+                            if (json.playerData[i].role[1] == 'Evil' && json.playerData[i].role[0] != 'Mordred') {
+                                inner_li += 'Evil ';
+                            }
+                        } else if (player_role[0] == 'Percival') {
+                            if (json.playerData[i].role[0] == 'Merlin' || json.playerData[i].role[0] == 'Morgana') {
+                                inner_li += 'Merlin ';
+                            }
+                        } else if (player_role[1] == 'Evil') {
+                            if (json.playerData[i].role[1] == 'Evil' && json.playerData[i].role[0] != 'Oberon') {
+                                inner_li += 'Evil ';
+                            }
                         }
-                    } else if (player_role[0] == 'Percival') {
-                        if (json.playerData[i].role[0] == 'Merlin' || json.playerData[i].role[0] == 'Morgana') {
-                            inner_li += 'Merlin ';
-                        }
-                    } else if (player_role[1] == 'Evil') {
-                        if (json.playerData[i].role[1] == 'Evil' && json.playerData[i].role[0] != 'Oberon') {
-                            inner_li += 'Evil ';
+                        if (player_role[0] == 'Oberon') {
+                            if (json.playerData[i].id == player_id) {
+                                inner_li += 'Evil ';
+                            }
                         }
                     }
-                    if (player_role[0] == 'Oberon') {
-                        if (json.playerData[i].id == player_id) {
-                            inner_li += 'Evil ';
-                        }
+                    inner_li += '</td>';
+    
+                    inner_li += '<td style="width:5px;">' + json.playerData[i].id + '</td><td style="width:80px;">' + json.playerData[i].name + '</td>';
+    
+                    inner_li += '<td style="width:10px;">';
+                    if (json.playerData[i].vote == true) {
+                        inner_li += " agree";
+                    } else if (json.playerData[i].vote == false) {
+                        inner_li += " disagree";
+                    }
+                    if (json.playerData[i].ready) inner_li += ' ready';
+                    inner_li += '</td>';
+                    inner_li += '</tr>';
+                }
+                playerList.html(inner_li);
+                player_data = json.playerData;
+                updateBoard();
+    
+            } else if (json.type == 'changeState') {
+                //update state
+                stateDisplay.html('state : ' + json.state);
+                for (i = 0; i < states.length; i++) {
+                    if (states[i] != json.state) {
+                        $("." + states[i]).css('display', 'none');
                     }
                 }
-                inner_li += '</td>';
+                $("." + json.state).css('display', 'initial');
+                if (json.state == "wait") init();
+            }else if(json.type=='exitRoom'){
+                window.alert("This room is deleted!");
+                room_id = null;
 
-                inner_li += '<td style="width:5px;">' + json.playerData[i].id + '</td><td style="width:80px;">' + json.playerData[i].name + '</td>';
+                $('.findRoom').css('display','initial');
+                $('.room').css('display','none');
 
-                inner_li += '<td style="width:10px;">';
-                if (json.playerData[i].vote == true) {
-                    inner_li += " agree";
-                } else if (json.playerData[i].vote == false) {
-                    inner_li += " disagree";
+                inner_table = "<span>Create new room: </span>";
+                inner_table += "<input type='text' id='roomInput'/><br><br>";
+                inner_table += "Room List";
+                inner_table += "<table><tr>";
+                inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
+                inner_table += "</tr>";
+                //console.log(json.room_list);
+                for(var key in json.room_list){
+                    //alert(json.room_list[key].room_name);
+                    inner_table += "<tr><td>";
+                    inner_table += json.room_list[key].room_name;
+                    inner_table += "</td><td>";
+                    inner_table += json.room_list[key].player_data.length;
+                    inner_table += "</td><td>";
+                    inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+                    inner_table += "</td>";
+                    inner_table += "</tr>";
                 }
-                if (json.playerData[i].ready) inner_li += ' ready';
-                inner_li += '</td>';
-                inner_li += '</tr>';
-            }
-            playerList.html(inner_li);
-            player_data = json.playerData;
-            updateBoard();
-
-        } else if (json.type == 'changeState') {
-            //update state
-            stateDisplay.html('state : ' + json.state);
-            for (i = 0; i < states.length; i++) {
-                if (states[i] != json.state) {
-                    $("." + states[i]).css('display', 'none');
+                inner_table += "</table>";
+                    $('.findRoom').html(inner_table);
                 }
-            }
-            $("." + json.state).css('display', 'initial');
-            if (json.state == "wait") init();
+    
+            if (p != '') content_height += 20;
+            content.append(p);
+            content.scrollTop(content_height); //auto scroll to bottom
+    
         }
-
-        if (p != '') content_height += 20;
-        content.append(p);
-        content.scrollTop(content_height); //auto scroll to bottom
     });
     //--------------Function to use here--------------//
     //--------------All states--------------//
@@ -543,10 +623,12 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
 
     //监听message事件，打印消息信息
     socket.on('message', function(json) {
-        var p = '<p><span style="color:' + json.color + ';">' + json.author + '</span> @ ' + json.time + ' : ' + json.text + '</p>';
-        content_height += 20;
-        content.append(p);
-        content.scrollTop(content_height); //auto scroll to bottom
+        if(json.room_id == room_id){
+            var p = '<p><span style="color:' + json.color + ';">' + json.author + '</span> @ ' + json.time + ' : ' + json.text + '</p>';
+            content_height += 20;
+            content.append(p);
+            content.scrollTop(content_height); //auto scroll to bottom
+        }   
     });
 
     //----------------------------------------------------------------------//
@@ -555,7 +637,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     $('.findMerlin').on('click', '#findButton', function() {
         //alert('click');
         $('.findMerlin').css('display', 'none');
-        var obj = { type: 'find' };
+        var obj = { type: 'find',room_id:room_id };
         obj['value'] = $('#selectMerlin').val();
         socket.emit('player', obj); //state = findMerlin
     });
@@ -564,14 +646,14 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     $('.mission').on('click', '#successButton', function() {
         $('.mission #successButton').css('display', 'none');
         $('.mission #failButton').css('display', 'none');
-        var obj = { type: 'vote', value: true };
+        var obj = { type: 'vote', value: true,room_id:room_id };
         socket.emit('player', obj); //state = mission
     });
 
     $('.mission').on('click', '#failButton', function() {
         $('.mission #successButton').css('display', 'none');
         $('.mission #failButton').css('display', 'none');
-        var obj = { type: 'vote', value: false };
+        var obj = { type: 'vote', value: false ,room_id:room_id};
         socket.emit('player', obj); //state = mission
     });
 
@@ -579,13 +661,13 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     //--------------vote state--------------//
     $('.vote').on('click', '#voteAgreeButton', function() {
         $('.vote').css('display', 'none');
-        var obj = { type: 'vote', value: true };
+        var obj = { type: 'vote', value: true ,room_id:room_id};
         socket.emit('player', obj); //state = vote
     });
 
     $('.vote').on('click', '#voteDisagreeButton', function() {
         $('.vote').css('display', 'none');
-        var obj = { type: 'vote', value: false };
+        var obj = { type: 'vote', value: false ,room_id:room_id};
         socket.emit('player', obj); //state = vote
 
     });
@@ -605,7 +687,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
         }
 
         //update player list in server
-        var obj={type:'update'};
+        var obj={type:'update',room_id:room_id};
         obj['value']=$(this).attr('checked');
         obj['id']=$(this).val();
         socket.emit('player',obj);
@@ -617,7 +699,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                 window.alert("You have to choose " + team_size + ' team members');
             } else if ($('.sendMission .member_check:checked').length == team_size) {
                 $('.sendMission').css('display', 'none');
-                var obj = { type: 'ready' };
+                var obj = { type: 'ready' ,room_id:room_id};
                 obj['team_members'] = team_members;
                 socket.emit('player', obj); //state = sendMission
             }
@@ -666,7 +748,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     });
     $('.randomCharacters #charactersDoneButton').click(function() {
         //window.alert('clicked');
-        var obj = { type: 'ready' };
+        var obj = { type: 'ready' ,room_id:room_id};
         obj['good_characters'] = good_characters;
         obj['evil_characters'] = evil_characters;
         socket.emit('player', obj); //state = randomCharacters
@@ -678,7 +760,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     $('.wait #playButton').click(function() {
         if ($('.wait #playButton').html() == 'play') {
             $('.wait #playButton').html('not yet');
-            socket.emit('player', { type: 'playButton' }); //state = wait
+            socket.emit('player', { type: 'playButton' ,room_id:room_id}); //state = wait
         } else if ($('.wait #playButton').html() == 'not yet') {
             $('.wait #playButton').html('play');
         }
@@ -687,10 +769,10 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     $('.wait #readyButton').click(function() {
         if ($('.wait #readyButton').html() == 'ready') {
             $('.wait #readyButton').html('not yet');
-            socket.emit('player', { value: true, type: 'readyButton' }); //state = wait
+            socket.emit('player', { value: true, type: 'readyButton' ,room_id:room_id}); //state = wait
         } else if ($('.wait #readyButton').html() == 'not yet') {
             $('.wait #readyButton').html('ready');
-            socket.emit('player', { value: false, type: 'readyButton' }); //state = wait
+            socket.emit('player', { value: false, type: 'readyButton' ,room_id:room_id}); //state = wait
         }
 
     });
@@ -701,7 +783,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
         if (e.keyCode === 13) {
             var msg = $(this).val();
             if (!msg) return;
-            socket.emit('message', msg);
+            socket.emit('message', {msg:msg,room_id:room_id});
             $(this).val('');
         }
     });
@@ -710,7 +792,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             var msg = $(this).val();
             if (!msg) return;
             if (!set_name) {
-                socket.emit('player', { name: msg, type: 'setName' });
+                socket.emit('player', { name: msg, type: 'setName' ,room_id:room_id});
                 set_name = true;
             }
             $(this).val('');
@@ -719,7 +801,18 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             }
         }
     });
-
+    $('.findRoom').on('keydown', '#roomInput',function(e) {
+        if(e.KeyCode === 13||e.which===13){
+            var msg = $(this).val();
+            if(!msg) return;
+            socket.emit('createRoom', {name:msg,room_id:room_id});
+            $(this).val('');
+        }
+    });
+    $('.findRoom').on('click', '.roomJoin', function(){
+        //alert($(this).val());
+        socket.emit('joinRoom', {room_id:$(this).val()});
+    });
 });
 //--------------Button or Input or Others--------------//
 //--------------All states are same--------------//
