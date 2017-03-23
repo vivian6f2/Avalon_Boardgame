@@ -1,18 +1,25 @@
 //----------------------------------------------------------------------//
-//room id
-var room_id = null;
-var room_name = "";
+//public information for game control
+//-----game states-----//
+var states = ["wait", "randomCharacters", "sendMission", "vote", "mission",
+    "missionSuccess", "missionFail", "update", "findMerlin", "badWin", "goodwin"];
 
+//-----room data-----//
+//room id
+var room_id = null; //if room id is not null, means that this client is in a room (room_list[room_id])
+var room_name = "";
+var room_owner_id = null;
+
+//-----game data-----//
 //public information for avalon game
 var player_data = []; //player list
 var last_player_data = null; //last games player list
-var set_name = false;
-var join_game = false;
-var player_id = null;
-var player_role = null;
-var room_owner_id = null;
+var set_name = false; //check if player's name is set
+var join_game = false; //check if player is join a game
+var player_id = null; //check if player is in a game
+var player_role = null; //this client's role
 
-
+//change when send mission state
 var leader_id = null;
 var leader_name = null;
 var team_size = null;
@@ -25,11 +32,7 @@ var max_evil = 0;
 var good_characters = [];
 var evil_characters = [];
 
-//game states
-var states = ["wait", "randomCharacters", "sendMission", "vote", "mission",
-    "missionSuccess", "missionFail", "update", "findMerlin", "badWin", "goodwin"];
-
-//UI
+//-----UI-----//
 var content_height = 0;
 
 //----------------------------------------------------------------------//
@@ -47,30 +50,10 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     //收到server的连接确认
     socket.on('open', function(json) { //socket.emit('open')
         room_id = json.room_id;
+        //if room id is null, means that client is not in any room, show the room list
         if(room_id==null){
-            inner_table = "<span>Create new room: </span>";
-            inner_table += "<input type='text' id='roomInput'/><br><br>";
-            inner_table += "Room List";
-            inner_table += "<table><tr>";
-            inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
-            inner_table += "</tr>";
-            //console.log(json.room_list);
-            for(var key in json.room_list){
-                //alert(json.room_list[key].room_name);
-                if(json.room_list[key].player_data.length>0){
-                    inner_table += "<tr><td>";
-                    inner_table += json.room_list[key].room_name;
-                    inner_table += "</td><td>";
-                    inner_table += json.room_list[key].player_data.length;
-                    inner_table += "</td><td>";
-                    if(json.room_list[key].state=='wait')
-                        inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
-                    inner_table += "</td>";
-                    inner_table += "</tr>";
-                }
-            }
-            inner_table += "</table>";
-            $('.findRoom').html(inner_table);
+            updateRoomListTable(json.room_list);
+            
 
         }else{
             $('.findRoom').css('display','none');
@@ -81,29 +64,7 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
     });
 
     socket.on('updateRoom', function(json){
-        inner_table = "<span>Create new room: </span>";
-        inner_table += "<input type='text' id='roomInput'/><br><br>";
-        inner_table += "Room List";
-        inner_table += "<table><tr>";
-        inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
-        inner_table += "</tr>";
-        //console.log(json.room_list);
-        for(var key in json.room_list){
-            //alert(json.room_list[key].room_name);
-            if(json.room_list[key].player_data.length>0){
-                inner_table += "<tr><td>";
-                inner_table += json.room_list[key].room_name;
-                inner_table += "</td><td>";
-                inner_table += json.room_list[key].player_data.length;
-                inner_table += "</td><td>";
-                if(json.room_list[key].state=='wait')
-                    inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
-                inner_table += "</td>";
-                inner_table += "</tr>";
-            }
-        }
-        inner_table += "</table>";
-        $('.findRoom').html(inner_table);
+        updateRoomListTable(json.room_list);
     });
 
     //----------------------------------------------------------------------//
@@ -403,30 +364,8 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                 $('.findRoom').css('display','initial');
                 $('.room').css('display','none');
 
-                inner_table = "<span>Create new room: </span>";
-                inner_table += "<input type='text' id='roomInput'/><br><br>";
-                inner_table += "Room List";
-                inner_table += "<table><tr>";
-                inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
-                inner_table += "</tr>";
-                //console.log(json.room_list);
-                for(var key in json.room_list){
-                    //alert(json.room_list[key].room_name);
-                    if(json.room_list[key].player_data.length>0){
-                        inner_table += "<tr><td>";
-                        inner_table += json.room_list[key].room_name;
-                        inner_table += "</td><td>";
-                        inner_table += json.room_list[key].player_data.length;
-                        inner_table += "</td><td>";
-                        if(json.room_list[key].state=='wait')
-                            inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
-                        inner_table += "</td>";
-                        inner_table += "</tr>";
-                    }
-                }
-                inner_table += "</table>";
-                    $('.findRoom').html(inner_table);
-                }
+                updateRoomListTable(json.room_list);
+            }
     
             if (p != '') content_height += 20;
             content.append(p);
@@ -564,7 +503,31 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
         return show_list;
 
     }
-
+    var updateRoomListTable = function(room_list){
+        inner_table = "<span>Create new room: </span>";
+        inner_table += "<input type='text' id='roomInput' autocomplete='off'/><br><br>";
+        inner_table += "Room List";
+        inner_table += "<table><tr>";
+        inner_table += "<td>Room name</td><td>players#</td><td>join</td>"
+        inner_table += "</tr>";
+        //console.log(json.room_list);
+        for(var key in room_list){
+            //alert(json.room_list[key].room_name);
+            if(room_list[key].player_data.length>0){
+                inner_table += "<tr><td>";
+                inner_table += room_list[key].room_name;
+                inner_table += "</td><td>";
+                inner_table += room_list[key].player_data.length;
+                inner_table += "</td><td>";
+                if(room_list[key].state=='wait')
+                    inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+                inner_table += "</td>";
+                inner_table += "</tr>";
+            }
+        }
+        inner_table += "</table>";
+        $('.findRoom').html(inner_table);
+    }
     //--------------All states--------------//
     //--------------randomCharacters states--------------//
     var updateCharactersSet = function() {
