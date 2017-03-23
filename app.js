@@ -1,18 +1,23 @@
 //----------------------------------------------------------------------//
 //public information for avalon game
-//game states
+//-----game states-----//
 var states = ["wait","randomCharacters","sendMission","vote","mission",
   "missionSuccess","missionFail","update","findMerlin","evilWin","goodWin"]; //all states needed
-var good_evil_count = [[3,2],[4,2],[4,3],[5,3],[6,3],[6,4]]; //rule
+
+//-----game rules-----//
+//index+5 players (0->5 1->6... 5->10)
+var good_evil_count = [[3,2],[4,2],[4,3],[5,3],[6,3],[6,4]]; //good characters numbers and evil characters numbers
+//number of team members for every turn (5 players to 10 players), true/false means the 4th turn, need two failure or not
 var team_assignment = [[[2,3,2,3,3],false],[[2,3,4,3,4],false],[[2,3,3,4,4],true],[[3,4,4,5,5],true],[[3,4,4,5,5],true],[[3,4,4,5,5],true]]; //rule
 
-//for debug
-var show_emit = false;
-
-var room_list = {}; //key & room class
+//-----room data-----//
+//key : value = key : room class
+var room_list = {}; //key & room class (hashmap)
 var room_id = 0; //for creating unique room id
 
-
+//-----for debug-----//
+//console log every emit action
+var show_emit = false;
 //----------------------------------------------------------------------//
 
 
@@ -32,25 +37,25 @@ io.set('log level', 1);
 
 //----------------------------------------------------------------------//
 //gameplay programming here!!
-//WebSocket连接监听
+//WebSocket listening
 io.on('connection', function (socket) {
   if(show_emit) console.log('emit socket open (one client)');
-  //console.log(room_list);
-  socket.emit('open',{room_list:room_list,room_id:null});//通知客户端已连接 //只傳給一個
+  socket.emit('open',{room_list:room_list,room_id:null});//client is connect, not in a room yet
   // 打印握手信息
   // console.log(socket.handshake);
 
-  // 构造客户端对象
+  // client class
   var client = {
     socket:socket,
     name:false,
     color:getColor(),
     id:null, //same as player_data[index]['id']
-    room_id:null
+    room_id:null //to check which room the client is in
   };
 
 //--------------All states are different--------------//
   socket.on('createRoom', function(json){
+    //client create a room
     console.log('create new room');
     var room = {
       //room class
@@ -82,19 +87,30 @@ io.on('connection', function (socket) {
       room_owner_id : null, //room owner
       leader_id : null //leader to choose members
     };
+    //add new room in room list
     room_list[room_id]=room;
-    socket.emit('open',{room_list:room_list,room_id:room_id, room_name:json.name});//通知客户端已连接 //只傳給一個
-    client.room_id=room_id;
+
+    //set the room's name
     room_list[room_id].room_name = json.name;
-    console.log(room_list[room_id]);
-    room_id++;
-    socket.broadcast.emit('updateRoom',{room_list:room_list});
+
+    //update client's room id, so this client know which room it is in
+    client.room_id=room_id;
+
+    //send client room data
+    sendRoomData();
+
+    room_id++;//for create unique room id
   });
+
+
   socket.on('joinRoom', function(json){
-    console.log('join room '+json.room_id);
+    //client join a room
+
+    //update client's room id, so this client know which room it is in
     client.room_id=json.room_id;
-    socket.emit('open',{room_list:room_list,room_id:client.room_id, room_name:room_list[json.room_id].room_name});//通知客户端已连接 //只傳給一個
-    
+
+    //send client room data
+    sendRoomData();
   });
 
   socket.on('player', function(json){
@@ -114,8 +130,8 @@ io.on('connection', function (socket) {
               updatePlayerList();
               //update ready state
               updateAllReadyState();
-
-              socket.broadcast.emit('updateRoom',{room_list:room_list});
+              //update room list
+              updateRoomList();
   
             }else{
               console.log("player login failed (server is full)");
@@ -228,9 +244,7 @@ io.on('connection', function (socket) {
               new_state = states[10];
             }
             changeState(new_state);
-            if(show_emit) console.log("emit end game (all clients)");
-            socket.emit('system',{state:room_list[client.room_id].state,type:'endGame',last_player_data:room_list[client.room_id].player_data,room_id:client.room_id});
-            socket.broadcast.emit('system',{state:room_list[client.room_id].state,type:'endGame',last_player_data:room_list[client.room_id].player_data,room_id:client.room_id});
+            endGame();
             init();
             changeState(states[0]);
             updatePlayerList();
@@ -240,6 +254,7 @@ io.on('connection', function (socket) {
           break;
       }
     }else{
+      if(show_emit) console.log("emit exit the room, and room list (one client)");
       socket.emit('system',{type:'exitRoom',room_id:client.room_id,room_list:room_list});
     }
 
@@ -283,7 +298,7 @@ io.on('connection', function (socket) {
     //remove this player from player_data
     if(client.room_id!=null && client.room_id in room_list) {
       removePlayer();
-    
+      if(show_emit) console.log('emit client disconnect (all clients)');
       socket.broadcast.emit('system',obj);
       console.log(client.name + '(' + client.id+ ') Disconnect');
       //console.log('total player number: '+player_data.length);
@@ -311,6 +326,7 @@ io.on('connection', function (socket) {
         delete room_list[client.room_id];
       }
       client.room_id = null;
+      updateRoomList();
     }
   });
 //--------------All states are same--------------//
@@ -364,7 +380,8 @@ io.on('connection', function (socket) {
     if(show_emit) console.log("emit new state : "+room_list[client.room_id].state+" (all clients)");
     socket.emit('system',{state:room_list[client.room_id].state,type:'changeState',room_id:client.room_id});
     socket.broadcast.emit('system',{state:room_list[client.room_id].state,type:'changeState',room_id:client.room_id});
-    socket.broadcast.emit('updateRoom',{room_list:room_list});
+    //update room list
+    updateRoomList();
   };
   var resetPlayerData=function(){
     for(i=0;i<room_list[client.room_id].player_data.length;i++){
@@ -374,6 +391,22 @@ io.on('connection', function (socket) {
       room_list[client.room_id].player_data[i]['teammembers']=false;
     }
   };
+  var sendRoomData=function(){
+    //send client room data
+    if(show_emit) console.log('emit the room data, client join the room (one client)');
+    socket.emit('open',{room_list:room_list,room_id:client.room_id, room_name:room_list[client.room_id].room_name}); 
+  };
+  var updateRoomList=function(){
+    //update room list
+    if(show_emit) console.log('emit update room, and room list (all clients)');
+    socket.broadcast.emit('updateRoom',{room_list:room_list});
+  };
+  var endGame=function(){
+    //send end game message to all clients in this room
+    if(show_emit) console.log("emit end game (all clients)");
+    socket.emit('system',{state:room_list[client.room_id].state,type:'endGame',last_player_data:room_list[client.room_id].player_data,room_id:client.room_id});
+    socket.broadcast.emit('system',{state:room_list[client.room_id].state,type:'endGame',last_player_data:room_list[client.room_id].player_data,room_id:client.room_id});            
+  }
 //--------------All states--------------//
 //--------------wait states--------------//
   var insertPlayerData=function(name){
@@ -514,7 +547,7 @@ io.on('connection', function (socket) {
     num_of_team = team_assignment[room_list[client.room_id].player_data.length-5][0][room_list[client.room_id].turn];
     two_fail = team_assignment[room_list[client.room_id].player_data.length-5][1];
 
-
+    if(show_emit) console.log("emit set leader (all clients)");
     socket.emit('system',{state:room_list[client.room_id].state,type:'setLeader',leader_id:room_list[client.room_id].leader_id,team_size:num_of_team,two_fail:two_fail,turn:room_list[client.room_id].turn,vote_turn:room_list[client.room_id].vote_turn,room_id:client.room_id});
     socket.broadcast.emit('system',{state:room_list[client.room_id].state,type:'setLeader',leader_id:room_list[client.room_id].leader_id,team_size:num_of_team,two_fail:two_fail,turn:room_list[client.room_id].turn,vote_turn:room_list[client.room_id].vote_turn,room_id:client.room_id});
     
@@ -641,9 +674,7 @@ var updateGame=function(){
   room_list[client.room_id].vote_fail = 0;
   if(room_list[client.room_id].fail_time>=3){//Evil win
     changeState(states[9]);
-    if(show_emit) console.log('emit end game (all clients)');
-    socket.emit('system',{state:room_list[client.room_id].state,type:'endGame',last_player_data:room_list[client.room_id].player_data,room_id:client.room_id});
-    socket.broadcast.emit('system',{state:room_list[client.room_id].state,type:'endGame',last_player_data:room_list[client.room_id].player_data,room_id:client.room_id});
+    endGame();
     init();
     changeState(states[0]);
     updatePlayerList();
