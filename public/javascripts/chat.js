@@ -57,14 +57,17 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
             //console.log(json.room_list);
             for(var key in json.room_list){
                 //alert(json.room_list[key].room_name);
-                inner_table += "<tr><td>";
-                inner_table += json.room_list[key].room_name;
-                inner_table += "</td><td>";
-                inner_table += json.room_list[key].player_data.length;
-                inner_table += "</td><td>";
-                inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
-                inner_table += "</td>";
-                inner_table += "</tr>";
+                if(json.room_list[key].player_data.length>0){
+                    inner_table += "<tr><td>";
+                    inner_table += json.room_list[key].room_name;
+                    inner_table += "</td><td>";
+                    inner_table += json.room_list[key].player_data.length;
+                    inner_table += "</td><td>";
+                    if(json.room_list[key].state=='wait')
+                        inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+                    inner_table += "</td>";
+                    inner_table += "</tr>";
+                }
             }
             inner_table += "</table>";
             $('.findRoom').html(inner_table);
@@ -87,14 +90,17 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
         //console.log(json.room_list);
         for(var key in json.room_list){
             //alert(json.room_list[key].room_name);
-            inner_table += "<tr><td>";
-            inner_table += json.room_list[key].room_name;
-            inner_table += "</td><td>";
-            inner_table += json.room_list[key].player_data.length;
-            inner_table += "</td><td>";
-            inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
-            inner_table += "</td>";
-            inner_table += "</tr>";
+            if(json.room_list[key].player_data.length>0){
+                inner_table += "<tr><td>";
+                inner_table += json.room_list[key].room_name;
+                inner_table += "</td><td>";
+                inner_table += json.room_list[key].player_data.length;
+                inner_table += "</td><td>";
+                if(json.room_list[key].state=='wait')
+                    inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+                inner_table += "</td>";
+                inner_table += "</tr>";
+            }
         }
         inner_table += "</table>";
         $('.findRoom').html(inner_table);
@@ -406,14 +412,17 @@ $(function() { //$(document).ready(function() { ... }); it means that when docum
                 //console.log(json.room_list);
                 for(var key in json.room_list){
                     //alert(json.room_list[key].room_name);
-                    inner_table += "<tr><td>";
-                    inner_table += json.room_list[key].room_name;
-                    inner_table += "</td><td>";
-                    inner_table += json.room_list[key].player_data.length;
-                    inner_table += "</td><td>";
-                    inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
-                    inner_table += "</td>";
-                    inner_table += "</tr>";
+                    if(json.room_list[key].player_data.length>0){
+                        inner_table += "<tr><td>";
+                        inner_table += json.room_list[key].room_name;
+                        inner_table += "</td><td>";
+                        inner_table += json.room_list[key].player_data.length;
+                        inner_table += "</td><td>";
+                        if(json.room_list[key].state=='wait')
+                            inner_table += "<button value='"+key+"' class='roomJoin'>join</button>";
+                        inner_table += "</td>";
+                        inner_table += "</tr>";
+                    }
                 }
                 inner_table += "</table>";
                     $('.findRoom').html(inner_table);
