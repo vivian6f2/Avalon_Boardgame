@@ -6,7 +6,7 @@ A single page avalon boardgame using websocket. And a Node.js server to handle t
 
 #### Server
 * Implement a server to handle both chat room and Avalon game process with Node.js and socket.io.
-* Designed a finate state machine for process the game.
+* Designed a finate state machine for processing the game.
 
 #### Client
 * Implement a single page website to perform Avalon boardgame and chat room with jQuery.
