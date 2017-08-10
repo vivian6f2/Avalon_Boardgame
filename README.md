@@ -4,10 +4,10 @@ Implement a single page avalon boardgame using websocket. Using socket.io instea
 
 ### Detail
 
-Simple chat room example:
-http://blog.fens.me/nodejs-socketio-chat/
-app.js for server
-chat.js for client
+Simple chat room example:/s/s
+http://blog.fens.me/nodejs-socketio-chat/ /s/s
+app.js for server/s/s
+chat.js for client/s/s
 
 ### Install
 
