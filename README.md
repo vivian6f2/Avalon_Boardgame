@@ -1,25 +1,21 @@
-Avalon Boardgame (socket.io)
-===============
+# Avalon Boardgame (socket.io)
 
-a very simple avalon boardgame using websocket. Using socket.io instead of ws modules.
+Implement a single page avalon boardgame using websocket. Using socket.io instead of ws modules.
 
-Detail
-==================
+### Detail
 
-simple chat room
+Simple chat room example:
 http://blog.fens.me/nodejs-socketio-chat/
 app.js for server
 chat.js for client
 
-Install
-==================
+### Install
 
 ```{bash}
 npm install
 node app.js
 ```
 
-Demo
-==================
-after install, 
+### Demo
+After installing, 
 http://localhost:3000
