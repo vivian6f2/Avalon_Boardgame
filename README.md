@@ -1,4 +1,7 @@
+
 # Avalon Boardgame (socket.io)
+2018/02/04
+
 
 A single page avalon boardgame using websocket. And a Node.js server to handle the game process. Using socket.io instead of ws modules.
 
